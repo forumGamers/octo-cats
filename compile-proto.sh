@@ -1,0 +1,1 @@
+protoc -I=C:/Users/USER/go/src/octo-cats/proto --go_out=. C:/Users/USER/go/src/octo-cats/proto/*.proto --go-grpc_out=.

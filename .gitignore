@@ -1,0 +1,3 @@
+.env
+
+/protobuf/*.pb.go
