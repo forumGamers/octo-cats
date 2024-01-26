@@ -18,6 +18,7 @@ func (s *CommentServiceImpl) CreatePayload(text string, postId primitive.ObjectI
 		PostId:    postId,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
+		Reply:     []ReplyComment{},
 	}
 }
 

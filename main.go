@@ -14,6 +14,7 @@ import (
 	"github.com/forumGamers/octo-cats/pkg/post"
 	"github.com/forumGamers/octo-cats/pkg/preference"
 	"github.com/forumGamers/octo-cats/pkg/share"
+	commentProto "github.com/forumGamers/octo-cats/protobuf/comment"
 	likeProto "github.com/forumGamers/octo-cats/protobuf/like"
 	postProto "github.com/forumGamers/octo-cats/protobuf/post"
 	tp "github.com/forumGamers/octo-cats/third-party"
@@ -48,6 +49,7 @@ func main() {
 	//services
 	postService := post.NewPostService(postRepo, ik)
 	userPreferenceService := preference.NewPreferenceService(userPreferenceRepo)
+	commentService := comment.NewCommentService(commentRepo)
 
 	interceptor := interceptors.NewInterCeptor()
 	grpcServer := grpc.NewServer(
@@ -68,6 +70,12 @@ func main() {
 		PostRepo:              postRepo,
 		UserPreferenceRepo:    userPreferenceRepo,
 		UserPreferenceService: userPreferenceService,
+	})
+	commentProto.RegisterCommentServiceServer(grpcServer, &cc.CommentService{
+		GetUser:        interceptor.GetUserFromCtx,
+		PostRepo:       postRepo,
+		CommentRepo:    commentRepo,
+		CommentService: commentService,
 	})
 
 	log.Printf("Starting to serve in port : %s", address)
