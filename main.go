@@ -12,8 +12,10 @@ import (
 	"github.com/forumGamers/octo-cats/pkg/comment"
 	"github.com/forumGamers/octo-cats/pkg/like"
 	"github.com/forumGamers/octo-cats/pkg/post"
+	"github.com/forumGamers/octo-cats/pkg/preference"
 	"github.com/forumGamers/octo-cats/pkg/share"
-	"github.com/forumGamers/octo-cats/protobuf"
+	likeProto "github.com/forumGamers/octo-cats/protobuf/like"
+	postProto "github.com/forumGamers/octo-cats/protobuf/post"
 	tp "github.com/forumGamers/octo-cats/third-party"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -41,15 +43,17 @@ func main() {
 	likeRepo := like.NewLikeRepo()
 	commentRepo := comment.NewCommentRepo()
 	shareRepo := share.NewShareRepo()
+	userPreferenceRepo := preference.NewPreferenceRepo()
 
 	//services
 	postService := post.NewPostService(postRepo, ik)
+	userPreferenceService := preference.NewPreferenceService(userPreferenceRepo)
 
 	interceptor := interceptors.NewInterCeptor()
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(interceptor.Logging, interceptor.UnaryAuthentication),
 	)
-	protobuf.RegisterPostServiceServer(grpcServer, &cc.PostService{
+	postProto.RegisterPostServiceServer(grpcServer, &cc.PostService{
 		GetUser:     interceptor.GetUserFromCtx,
 		PostRepo:    postRepo,
 		PostService: postService,
@@ -57,6 +61,13 @@ func main() {
 		LikeRepo:    likeRepo,
 		CommentRepo: commentRepo,
 		ShareRepo:   shareRepo,
+	})
+	likeProto.RegisterLikeServiceServer(grpcServer, &cc.LikeService{
+		GetUser:               interceptor.GetUserFromCtx,
+		LikeRepo:              likeRepo,
+		PostRepo:              postRepo,
+		UserPreferenceRepo:    userPreferenceRepo,
+		UserPreferenceService: userPreferenceService,
 	})
 
 	log.Printf("Starting to serve in port : %s", address)

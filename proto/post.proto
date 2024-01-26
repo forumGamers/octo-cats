@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package post;
 
-option go_package = "./protobuf";
+option go_package = "./protobuf/post";
 
 message Messages {
   string message = 1;

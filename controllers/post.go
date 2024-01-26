@@ -9,7 +9,7 @@ import (
 	"github.com/forumGamers/octo-cats/pkg/post"
 	"github.com/forumGamers/octo-cats/pkg/share"
 	"github.com/forumGamers/octo-cats/pkg/user"
-	"github.com/forumGamers/octo-cats/protobuf"
+	protobuf "github.com/forumGamers/octo-cats/protobuf/post"
 	tp "github.com/forumGamers/octo-cats/third-party"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

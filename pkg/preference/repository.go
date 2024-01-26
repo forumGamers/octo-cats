@@ -6,10 +6,12 @@ import (
 
 	b "github.com/forumGamers/octo-cats/pkg/base"
 	"go.mongodb.org/mongo-driver/bson"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func NewPreferenceRepo() PreferenceRepo {
-	return &PreferenceRepoImpl{b.NewBaseRepo(b.GetCollection(b.Like))}
+	return &PreferenceRepoImpl{b.NewBaseRepo(b.GetCollection(b.Preference))}
 }
 
 func (r *PreferenceRepoImpl) Create(ctx context.Context, userId string) (UserPreference, error) {
@@ -29,6 +31,13 @@ func (r *PreferenceRepoImpl) Create(ctx context.Context, userId string) (UserPre
 
 func (r *PreferenceRepoImpl) FindByUserId(ctx context.Context, userId string) (data UserPreference, err error) {
 	err = r.FindOneByQuery(ctx, bson.M{"userId": userId}, &data)
+	if err != nil {
+		if e, ok := status.FromError(err); ok {
+			if e.Code() == codes.NotFound {
+				return r.Create(ctx, userId)
+			}
+		}
+	}
 	return
 }
 
