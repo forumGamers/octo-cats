@@ -27,10 +27,9 @@ func (r *PreferenceRepoImpl) Create(ctx context.Context, userId string) (UserPre
 	return data, nil
 }
 
-func (r *PreferenceRepoImpl) FindByUserId(ctx context.Context, userId string) (UserPreference, error) {
-	var data UserPreference
-	err := r.FindOneByQuery(ctx, bson.M{"userId": userId}, &data)
-	return data, err
+func (r *PreferenceRepoImpl) FindByUserId(ctx context.Context, userId string) (data UserPreference, err error) {
+	err = r.FindOneByQuery(ctx, bson.M{"userId": userId}, &data)
+	return
 }
 
 func (r *PreferenceRepoImpl) UpdateTags(ctx context.Context, userId string, tags []TagPreference) error {

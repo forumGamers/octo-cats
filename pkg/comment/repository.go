@@ -3,10 +3,15 @@ package comment
 import (
 	"context"
 
+	b "github.com/forumGamers/octo-cats/pkg/base"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+func NewCommentRepo() CommentRepo {
+	return &CommentRepoImpl{b.NewBaseRepo(b.GetCollection(b.Comment))}
+}
 
 func (r *CommentRepoImpl) CreateComment(ctx context.Context, data *Comment) error {
 	result, err := r.Create(ctx, &data)

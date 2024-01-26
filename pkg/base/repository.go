@@ -4,9 +4,11 @@ import (
 	"context"
 
 	cfg "github.com/forumGamers/octo-cats/config"
+	"github.com/forumGamers/octo-cats/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"google.golang.org/grpc/codes"
 )
 
 func NewBaseRepo(db *mongo.Collection) BaseRepo {
@@ -20,16 +22,26 @@ func (r *BaseRepoImpl) DeleteManyByQuery(ctx context.Context, filter any) error 
 
 func (r *BaseRepoImpl) DeleteOneById(ctx context.Context, id primitive.ObjectID) error {
 	_, err := r.DB.DeleteOne(ctx, bson.M{"_id": id})
+	if err == mongo.ErrNoDocuments {
+		return errors.NewAppError(codes.NotFound, "Data not found")
+	}
 	return err
 }
 
 func (r *BaseRepoImpl) DeleteOneByQuery(ctx context.Context, query any) error {
 	_, err := r.DB.DeleteOne(ctx, query)
+	if err == mongo.ErrNoDocuments {
+		return errors.NewAppError(codes.NotFound, "Data not found")
+	}
 	return err
 }
 
 func (r *BaseRepoImpl) FindOneById(ctx context.Context, id primitive.ObjectID, data any) error {
-	return r.DB.FindOne(ctx, bson.M{"_id": id}).Decode(data)
+	err := r.DB.FindOne(ctx, bson.M{"_id": id}).Decode(data)
+	if err == mongo.ErrNoDocuments {
+		return errors.NewAppError(codes.NotFound, "Data not found")
+	}
+	return err
 }
 
 func (r *BaseRepoImpl) InsertMany(ctx context.Context, data []any) (*mongo.InsertManyResult, error) {
@@ -48,8 +60,12 @@ func GetCollection(name CollectionName) *mongo.Collection {
 	return cfg.DB.Collection(string(name))
 }
 
-func (r *BaseRepoImpl) FindOneByQuery(ctx context.Context, query any, result any) error {
-	return r.DB.FindOne(ctx, query).Decode(result)
+func (r *BaseRepoImpl) FindOneByQuery(ctx context.Context, query any, result any) (err error) {
+	err = r.DB.FindOne(ctx, query).Decode(result)
+	if err == mongo.ErrNoDocuments {
+		err = errors.NewAppError(codes.NotFound, "Data not found")
+	}
+	return
 }
 
 func (r *BaseRepoImpl) UpdateOneByQuery(ctx context.Context, id primitive.ObjectID, query any) (*mongo.UpdateResult, error) {
