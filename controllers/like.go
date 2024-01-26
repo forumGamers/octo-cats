@@ -124,3 +124,26 @@ func (s *LikeService) CreateLike(ctx context.Context, in *protobuf.LikeIdPayload
 		UpdatedAt: result.UpdatedAt.Local().String(),
 	}, nil
 }
+
+func (s *LikeService) DeleteLike(ctx context.Context, in *protobuf.LikeIdPayload) (*protobuf.Messages, error) {
+	if in.PostId == "" {
+		return nil, status.Error(codes.InvalidArgument, "postId is required")
+	}
+
+	postId, err := primitive.ObjectIDFromHex(in.PostId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Invalid ObjectId")
+	}
+
+	userId := s.GetUser(ctx).UUID
+	var data like.Like
+	if err := s.LikeRepo.GetLikesByUserIdAndPostId(ctx, postId, userId, &data); err != nil {
+		return nil, err
+	}
+
+	if err := s.LikeRepo.DeleteLike(ctx, postId, userId); err != nil {
+		return nil, err
+	}
+
+	return &protobuf.Messages{Message: "success"}, nil
+}

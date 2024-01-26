@@ -16,6 +16,11 @@ message Like {
   string updatedAt = 5;
 }
 
+message Messages {
+  string message = 1;
+}
+
 service LikeService {
   rpc CreateLike(LikeIdPayload) returns (Like) {}
+  rpc DeleteLike(LikeIdPayload) returns (Messages) {}
 }
