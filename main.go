@@ -14,11 +14,13 @@ import (
 	"github.com/forumGamers/octo-cats/pkg/like"
 	"github.com/forumGamers/octo-cats/pkg/post"
 	"github.com/forumGamers/octo-cats/pkg/preference"
+	"github.com/forumGamers/octo-cats/pkg/reply"
 	"github.com/forumGamers/octo-cats/pkg/share"
 	bookmarkProto "github.com/forumGamers/octo-cats/protobuf/bookmark"
 	commentProto "github.com/forumGamers/octo-cats/protobuf/comment"
 	likeProto "github.com/forumGamers/octo-cats/protobuf/like"
 	postProto "github.com/forumGamers/octo-cats/protobuf/post"
+	replyProto "github.com/forumGamers/octo-cats/protobuf/reply"
 	tp "github.com/forumGamers/octo-cats/third-party"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -54,6 +56,7 @@ func main() {
 	userPreferenceService := preference.NewPreferenceService(userPreferenceRepo)
 	commentService := comment.NewCommentService(commentRepo)
 	bookmarkService := bookmark.NewBookMarkService(bookmarkRepo)
+	replyService := reply.NewReplyService(commentRepo)
 
 	interceptor := interceptors.NewInterCeptor()
 	grpcServer := grpc.NewServer(
@@ -86,6 +89,12 @@ func main() {
 		PostRepo:        postRepo,
 		BookmarkRepo:    bookmarkRepo,
 		BookmarkService: bookmarkService,
+	})
+	replyProto.RegisterReplyServiceServer(grpcServer, &cc.ReplyService{
+		GetUser:        interceptor.GetUserFromCtx,
+		CommentRepo:    commentRepo,
+		CommentService: commentService,
+		ReplyService:   replyService,
 	})
 
 	log.Printf("Starting to serve in port : %s", address)

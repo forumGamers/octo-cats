@@ -10,7 +10,7 @@ func NewReplyService(repo comment.CommentRepo) ReplyService {
 	return &ReplyServiceImpl{repo}
 }
 
-func (rs *ReplyServiceImpl) CreatePayload(text string, userId string) comment.ReplyComment {
+func (rs *ReplyServiceImpl) CreatePayload(text, userId string) comment.ReplyComment {
 	return comment.ReplyComment{
 		UserId:    userId,
 		Text:      text,

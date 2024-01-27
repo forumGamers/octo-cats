@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package reply;
+
+option go_package = "./protobuf/reply";
+
+service ReplyService {
+  rpc CreateReply(CommentForm) returns (Reply) {}
+}
+
+message Reply {
+  string _id = 1;
+  string userId = 2;
+  string text = 3;
+  string createdAt = 4;
+  string updatedAt = 5;
+}
+
+message CommentForm {
+  string text = 1;
+  string commentId = 2;
+}

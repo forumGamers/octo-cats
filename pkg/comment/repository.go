@@ -35,8 +35,12 @@ func (r *CommentRepoImpl) CreateMany(ctx context.Context, datas []any) (*mongo.I
 }
 
 func (r *CommentRepoImpl) CreateReply(ctx context.Context, id primitive.ObjectID, data *ReplyComment) error {
-	_, err := r.UpdateOneByQuery(ctx, id, bson.M{"$push": bson.M{"reply": data}})
-	return err
+	result, err := r.UpdateOneByQuery(ctx, id, bson.M{"$push": bson.M{"reply": data}})
+	if err != nil {
+		return err
+	}
+	data.Id = result.UpsertedID.(primitive.ObjectID)
+	return nil
 }
 
 func (r *CommentRepoImpl) DeleteReplyByPostId(ctx context.Context, postId primitive.ObjectID) error {
