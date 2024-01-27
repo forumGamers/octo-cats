@@ -60,3 +60,24 @@ func (s *BookmarkService) CreateBookmark(ctx context.Context, req *protobuf.Post
 		UpdatedAt: data.UpdatedAt.Local().String(),
 	}, nil
 }
+
+func (s *BookmarkService) DeleteBookmark(ctx context.Context, req *protobuf.IdPayload) (*protobuf.Messages, error) {
+	if req.XId == "" {
+		return nil, status.Error(codes.InvalidArgument, "_id is required")
+	}
+
+	bookmarkId, err := primitive.ObjectIDFromHex(req.XId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Invalid ObjectID")
+	}
+
+	var data bookmark.Bookmark
+	if err := s.BookmarkRepo.FindById(ctx, bookmarkId, &data); err != nil {
+		return nil, err
+	}
+
+	if err := s.BookmarkRepo.DeleteOneById(ctx, bookmarkId); err != nil {
+		return nil, err
+	}
+	return &protobuf.Messages{Message: "success"}, nil
+}

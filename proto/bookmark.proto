@@ -6,6 +6,7 @@ option go_package = "./protobuf/bookmark";
 
 service BookmarkService {
   rpc CreateBookmark(PostIdPayload) returns (Bookmark) {}
+  rpc DeleteBookmark(IdPayload) returns (Messages) {}
 }
 
 message Bookmark {
@@ -18,4 +19,12 @@ message Bookmark {
 
 message PostIdPayload {
   string postId = 1;
+}
+
+message IdPayload {
+  string _id = 1;
+}
+
+message Messages {
+  string message = 1;
 }
