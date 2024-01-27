@@ -54,3 +54,25 @@ func (s *CommentService) CreateComment(ctx context.Context, req *protobuf.Commen
 		UpdatedAt: commentPayload.UpdatedAt.Local().String(),
 	}, nil
 }
+
+func (s *CommentService) DeleteComment(ctx context.Context, req *protobuf.CommentIdPayload) (*protobuf.Messages, error) {
+	if req.XId == "" {
+		return nil, status.Error(codes.InvalidArgument, "_id is required")
+	}
+
+	commentId, err := primitive.ObjectIDFromHex(req.XId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Invalid ObjectId")
+	}
+
+	var data comment.Comment
+	if err := s.CommentRepo.FindById(ctx, commentId, &data); err != nil {
+		return nil, err
+	}
+
+	if err := s.CommentRepo.DeleteOne(ctx, commentId); err != nil {
+		return nil, err
+	}
+
+	return &protobuf.Messages{Message: "success"}, nil
+}

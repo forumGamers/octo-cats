@@ -27,6 +27,15 @@ message CommentForm {
   string postId = 2;
 }
 
+message CommentIdPayload {
+  string _id = 1;
+}
+
+message Messages {
+  string message = 1;
+}
+
 service CommentService {
   rpc CreateComment(CommentForm) returns (Comment) {}
+  rpc DeleteComment(CommentIdPayload) returns (Messages) {}
 }
