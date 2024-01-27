@@ -4,6 +4,7 @@ import (
 	"context"
 
 	b "github.com/forumGamers/octo-cats/pkg/base"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -30,4 +31,8 @@ func (r *BookmarkRepoImpl) FindById(ctx context.Context, id primitive.ObjectID, 
 
 func (r *BookmarkRepoImpl) DeleteOneById(ctx context.Context, id primitive.ObjectID) error {
 	return r.BaseRepo.DeleteOneById(ctx, id)
+}
+
+func (r *BookmarkRepoImpl) FindByPostIdAndUserId(ctx context.Context, postId primitive.ObjectID, userId string, result *Bookmark) error {
+	return r.FindOneByQuery(ctx, bson.M{"postId": postId, "userId": userId}, result)
 }

@@ -9,11 +9,13 @@ import (
 	cc "github.com/forumGamers/octo-cats/controllers"
 	"github.com/forumGamers/octo-cats/errors"
 	"github.com/forumGamers/octo-cats/interceptors"
+	"github.com/forumGamers/octo-cats/pkg/bookmark"
 	"github.com/forumGamers/octo-cats/pkg/comment"
 	"github.com/forumGamers/octo-cats/pkg/like"
 	"github.com/forumGamers/octo-cats/pkg/post"
 	"github.com/forumGamers/octo-cats/pkg/preference"
 	"github.com/forumGamers/octo-cats/pkg/share"
+	bookmarkProto "github.com/forumGamers/octo-cats/protobuf/bookmark"
 	commentProto "github.com/forumGamers/octo-cats/protobuf/comment"
 	likeProto "github.com/forumGamers/octo-cats/protobuf/like"
 	postProto "github.com/forumGamers/octo-cats/protobuf/post"
@@ -45,11 +47,13 @@ func main() {
 	commentRepo := comment.NewCommentRepo()
 	shareRepo := share.NewShareRepo()
 	userPreferenceRepo := preference.NewPreferenceRepo()
+	bookmarkRepo := bookmark.NewBookMarkRepo()
 
 	//services
 	postService := post.NewPostService(postRepo, ik)
 	userPreferenceService := preference.NewPreferenceService(userPreferenceRepo)
 	commentService := comment.NewCommentService(commentRepo)
+	bookmarkService := bookmark.NewBookMarkService(bookmarkRepo)
 
 	interceptor := interceptors.NewInterCeptor()
 	grpcServer := grpc.NewServer(
@@ -76,6 +80,12 @@ func main() {
 		PostRepo:       postRepo,
 		CommentRepo:    commentRepo,
 		CommentService: commentService,
+	})
+	bookmarkProto.RegisterBookmarkServiceServer(grpcServer, &cc.BookmarkService{
+		GetUser:         interceptor.GetUserFromCtx,
+		PostRepo:        postRepo,
+		BookmarkRepo:    bookmarkRepo,
+		BookmarkService: bookmarkService,
 	})
 
 	log.Printf("Starting to serve in port : %s", address)

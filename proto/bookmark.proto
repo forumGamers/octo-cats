@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package bookmark;
+
+option go_package = "./protobuf/bookmark";
+
+service BookmarkService {
+  rpc CreateBookmark(PostIdPayload) returns (Bookmark) {}
+}
+
+message Bookmark {
+  string _id = 1;
+  string postId = 2;
+  string userId = 3;
+  string createdAt = 4;
+  string updatedAt = 5;
+}
+
+message PostIdPayload {
+  string postId = 1;
+}

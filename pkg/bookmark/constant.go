@@ -12,6 +12,7 @@ type BookmarkRepo interface {
 	FindOne(ctx context.Context, query any, result *Bookmark) error
 	FindById(ctx context.Context, id primitive.ObjectID, result *Bookmark) error
 	DeleteOneById(ctx context.Context, id primitive.ObjectID) error
+	FindByPostIdAndUserId(ctx context.Context, postId primitive.ObjectID, userId string, result *Bookmark) error
 }
 
 type BookmarkRepoImpl struct{ b.BaseRepo }
