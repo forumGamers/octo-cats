@@ -7,6 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func NewCommentRepo() CommentRepo {
@@ -98,5 +100,8 @@ func (r *CommentRepoImpl) DeleteOneReply(ctx context.Context, id, replyId primit
 			},
 		},
 	})
-	return err
+	if err != nil {
+		return status.Error(codes.Unknown, "database error")
+	}
+	return nil
 }

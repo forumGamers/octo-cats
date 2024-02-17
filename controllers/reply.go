@@ -48,3 +48,39 @@ func (s *ReplyService) CreateReply(ctx context.Context, req *protobuf.CommentFor
 		UpdatedAt: replyPayload.UpdatedAt.Local().String(),
 	}, nil
 }
+
+func (s *ReplyService) DeleteReply(ctx context.Context, req *protobuf.DeleteReplyPayload) (*protobuf.Messages, error) {
+	if req.ReplyId == "" {
+		return nil, status.Error(codes.InvalidArgument, "replyId is required")
+	}
+
+	if req.CommentId == "" {
+		return nil, status.Error(codes.InvalidArgument, "commentId is required")
+	}
+
+	replyId, err := primitive.ObjectIDFromHex(req.ReplyId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid replyId")
+	}
+
+	commentId, err := primitive.ObjectIDFromHex(req.CommentId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid commentId")
+	}
+
+	var data comment.ReplyComment
+	if err := s.CommentRepo.FindReplyById(ctx, commentId, replyId, &data); err != nil {
+		return nil, err
+	}
+
+	user := s.GetUser(ctx)
+	if data.UserId != user.UUID || user.LoggedAs != "Admin" {
+		return nil, status.Error(codes.PermissionDenied, "Forbidden")
+	}
+
+	if err := s.CommentRepo.DeleteOneReply(ctx, commentId, replyId); err != nil {
+		return nil, err
+	}
+
+	return &protobuf.Messages{Message: "success"}, nil
+}
