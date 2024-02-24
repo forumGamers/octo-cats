@@ -28,9 +28,71 @@ type PostService struct {
 	ShareRepo   share.ShareRepo
 }
 
-func (s *PostService) CreatePost(ctx context.Context, req *protobuf.PostForm) (*protobuf.Messages, error) {
-	println("masuk")
-	return nil, nil
+func (s *PostService) CreatePost(ctx context.Context, req *protobuf.PostForm) (*protobuf.Post, error) {
+	tags := []string{}
+	if len(req.Text) > 0 {
+		tags = s.PostService.GetPostTags(req.Text)
+	}
+
+	postMedias := make([]post.Media, 0)
+	if len(req.Files) > 0 {
+		errCh := make(chan error)
+		var wg sync.WaitGroup
+
+		for _, file := range req.Files {
+			wg.Add(1)
+			go func(postMedias *[]post.Media, file *protobuf.FileHeader) {
+				defer wg.Done()
+
+				data, err := s.PostService.UploadPostMedia(ctx, file)
+				if err != nil {
+					errCh <- err
+					return
+				}
+
+				*postMedias = append(*postMedias, data)
+				errCh <- nil
+			}(&postMedias, file)
+		}
+
+		go func() {
+			wg.Wait()
+			close(errCh)
+		}()
+
+		for err := range errCh {
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	userId := s.GetUser(ctx).UUID
+	post := s.PostService.CreatePostPayload(userId, req.Text, req.Privacy, req.AllowComment, postMedias, tags)
+
+	s.PostRepo.Create(context.Background(), &post)
+	resultMedia := make([]*protobuf.Media, 0)
+	if len(post.Media) > 0 {
+		for _, media := range post.Media {
+			resultMedia = append(resultMedia, &protobuf.Media{
+				Id:   media.Id,
+				Url:  media.Url,
+				Type: media.Type,
+			})
+		}
+	}
+
+	return &protobuf.Post{
+		XId:          post.Id.Hex(),
+		UserId:       post.UserId,
+		Text:         post.Text,
+		Media:        resultMedia,
+		AllowComment: post.AllowComment,
+		CreatedAt:    post.CreatedAt.String(),
+		UpdatedAt:    post.UpdatedAt.String(),
+		Tags:         post.Tags,
+		Privacy:      post.Privacy,
+	}, nil
 }
 
 func (s *PostService) DeletePost(ctx context.Context, req *protobuf.PostIdPayload) (*protobuf.Messages, error) {

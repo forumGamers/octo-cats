@@ -13,6 +13,7 @@ message FileHeader {
   string contentType = 2;
   uint64 size = 3;
   repeated string header = 4;
+  bytes content = 5;
 }
 
 message PostForm {
@@ -27,6 +28,24 @@ message PostIdPayload {
 }
 
 service PostService {
-  rpc CreatePost(PostForm) returns (Messages) {}
+  rpc CreatePost(PostForm) returns (Post) {}
   rpc DeletePost(PostIdPayload) returns (Messages) {}
+}
+
+message Media {
+  string id = 1;
+  string type = 2;
+  string url = 3;
+}
+
+message Post {
+  string _id = 1;
+  string userId = 2;
+  string text = 3;
+  repeated Media media = 4;
+  bool allowComment = 5;
+  string createdAt = 6;
+  string updatedAt = 7;
+  repeated string tags = 8;
+  string privacy = 9;
 }
